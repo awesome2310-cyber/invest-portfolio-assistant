@@ -2,13 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { DEFAULT_FX_USDTHB } from "@/lib/allocation/assumptions";
 import { buildAllocation } from "@/lib/allocation/engine";
-import { buildInstruments } from "@/lib/allocation/instruments";
+import { REFERENCE_PRICES, buildInstruments } from "@/lib/allocation/instruments";
 import { projectPortfolio } from "@/lib/allocation/montecarlo";
 import type { Currency, MarketPreference, PlanInput, Projection, TaxWrapper } from "@/lib/allocation/types";
 import { ASSET_CLASSES } from "@/lib/allocation/types";
+import { assetUrl } from "@/lib/asset";
 import { FanChart, MixDonut } from "@/components/charts";
 import { useT } from "@/components/i18n-provider";
+import { blankThresholds } from "@/lib/desk/book";
+import { lastPrices } from "@/lib/market/snapshot";
+import type { MarketSnapshot } from "@/lib/market/snapshot";
+import { readDesk, writeDesk } from "@/lib/storage";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,28 +25,43 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { formatMoney, formatPct, formatRatio, formatUnits } from "@/lib/format";
 
-export function PlanStudio({
-  initial,
-  fx,
-  prices,
-}: {
-  initial: PlanInput;
-  fx: number;
-  prices: Record<string, number>;
-}) {
+export function PlanStudio() {
   const t = useT();
   const router = useRouter();
-  const [timeline, setTimeline] = useState(initial.timelineYears);
-  const [amount, setAmount] = useState(initial.amount);
-  const [currency, setCurrency] = useState<Currency>(initial.currency);
-  const [risk, setRisk] = useState(initial.riskScore);
-  const [monthly, setMonthly] = useState(initial.monthlyContribution);
-  const [preference, setPreference] = useState<MarketPreference>(initial.marketPreference);
-  const [wrapper, setWrapper] = useState<TaxWrapper>(initial.taxWrapper);
+  const [timeline, setTimeline] = useState(10);
+  const [amount, setAmount] = useState(1_000_000);
+  const [currency, setCurrency] = useState<Currency>("THB");
+  const [risk, setRisk] = useState(50);
+  const [monthly, setMonthly] = useState(0);
+  const [preference, setPreference] = useState<MarketPreference>("balanced");
+  const [wrapper, setWrapper] = useState<TaxWrapper>("none");
+  const [fx, setFx] = useState(DEFAULT_FX_USDTHB);
+  const [prices, setPrices] = useState(REFERENCE_PRICES);
   const [accepted, setAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [projection, setProjection] = useState<Projection | null>(null);
+
+  useEffect(() => {
+    const saved = readDesk();
+    if (saved) {
+      setTimeline(saved.plan.timelineYears);
+      setAmount(saved.plan.amount);
+      setCurrency(saved.plan.currency);
+      setRisk(saved.plan.riskScore);
+      setMonthly(saved.plan.monthlyContribution);
+      setPreference(saved.plan.marketPreference);
+      setWrapper(saved.plan.taxWrapper);
+    }
+    fetch(assetUrl("/market/snapshot.json"))
+      .then((response) => (response.ok ? (response.json() as Promise<MarketSnapshot>) : null))
+      .then((snapshot) => {
+        if (!snapshot) return;
+        setFx(snapshot.fx || DEFAULT_FX_USDTHB);
+        setPrices({ ...REFERENCE_PRICES, ...lastPrices(snapshot) });
+      })
+      .catch(() => undefined);
+  }, []);
 
   const input: PlanInput = useMemo(
     () => ({
@@ -57,7 +78,7 @@ export function PlanStudio({
 
   const allocation = useMemo(
     () => buildAllocation(input),
-    [input.timelineYears, input.riskScore, input.marketPreference],
+    [input],
   );
   const built = useMemo(
     () => buildInstruments(input, allocation.weights, { fx, prices }),
@@ -81,19 +102,16 @@ export function PlanStudio({
     }
     setSaving(true);
     setError("");
-    const response = await fetch("/api/portfolio", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(input),
+    const current = readDesk();
+    writeDesk({
+      version: 1,
+      mode: "custom",
+      plan: input,
+      savedAt: new Date().toISOString(),
+      dismissed: [],
+      thresholds: current?.thresholds ?? blankThresholds(),
     });
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setError(payload.error || "Could not save");
-      setSaving(false);
-      return;
-    }
     router.push("/dashboard");
-    router.refresh();
   }
 
   return (

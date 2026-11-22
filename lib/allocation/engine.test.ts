@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CORRELATION, sumWeights } from "./assumptions";
 import { buildAllocation, profileFor } from "./engine";
-import { buildInstruments } from "./instruments";
 import { cholesky, portfolioVolatility } from "./math";
 import { projectPortfolio } from "./montecarlo";
 import { buildPlan } from "./index";

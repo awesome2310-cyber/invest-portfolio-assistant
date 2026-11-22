@@ -16,7 +16,7 @@ npm run dev
 
 Open [http://127.0.0.1:43123](http://127.0.0.1:43123).
 
-The demo desk signs in as `demo@sathorn.desk` / `demo-desk`. It is seeded with about a year of saved prices, three open alerts (hold, rebalance, swap), and a portfolio that was left alone. Use **Refresh prices** to replace listed quotes with Yahoo Finance. If Yahoo is unreachable, the saved tape stays.
+The demo desk is one click on the home page and is stored in this browser. It is tilted about 6 points overweight global equities so a rebalance alert is visible. The bundled price tape also includes a sharp move in CPNREIT and ADVANC, until the weekday job replaces it with market prices. Download the desk as JSON if you want a copy.
 
 Create your own account from the home page. The plan screen works with only the three inputs. Monthly contribution, a Thai or global tilt, and ThaiESG / RMF / SSF are optional and collapsed.
 
@@ -38,16 +38,16 @@ Alerts suggest **hold**, **rebalance** (with an amount), or **swap** a satellite
 
 ## Environment
 
-Copy `.env.example` to `.env.local`. No key is required.
+Accounts are not stored on a server. A desk saved in the browser can be downloaded as JSON. The market file is `public/market/snapshot.json`.
+
+Optional, only for the scheduled headline model:
 
 | Variable | Role |
 | --- | --- |
-| `OPENAI_API_KEY` | Optional headline scoring |
-| `OPENAI_MODEL` | Defaults to `gpt-4o-mini` |
+| `OPENAI_API_KEY` | Optional. GitHub Actions secret for headline scoring |
+| `OPENAI_MODEL` | Optional repository variable. Defaults to `gpt-4o-mini` |
 | `SMTP_URL` | Reserved for the email stub |
-| `LINE_CHANNEL_ACCESS_TOKEN` | Reserved for the LINE stub |
-
-Accounts and prices live in `data/sathorn.sqlite`, created on first launch. The file is gitignored.
+| `LINE_CHANNEL_ACCESS_TOKEN` | Reserved for the email/LINE stub shown on each alert. Nothing is sent. |
 
 The interface strings are in `messages/en.json` and `messages/th.json`. The language switch falls back to English for any key Thai does not override. The calculation notes stay in English.
 
@@ -59,21 +59,31 @@ npm test
 
 Vitest covers the allocation constraints (weights, glide path, risk tilt, volatility math), the Monte Carlo ordering, instrument board lots and the ThaiESG cap, alert actions, and the sentiment lexicon.
 
-## Deploy
+## Deploy on GitHub Pages
 
-This app expects a long-running Node process and a writable disk for SQLite. A serverless host that throws the filesystem away will forget the desk on every boot.
+The site is a static export. Allocation, the projection, and alerts run in the browser. The saved plan lives in `localStorage` on that device. Download or import it as `sathorn-desk.json` from the desk.
 
-### Docker
+Prices and headlines cannot be fetched from the browser. `.github/workflows/market-data.yml` runs at 22:30 UTC on weekdays (after the Bangkok and New York closes), writes `public/market/snapshot.json`, commits it, and deploys. If Yahoo is unreachable, the bundled tape stays. `.github/workflows/pages.yml` builds and deploys on every push to `main`.
+
+The public URL is [https://awesome2310-cyber.github.io/invest-portfolio-assistant/](https://awesome2310-cyber.github.io/invest-portfolio-assistant/).
+
+Local production build, matching Pages:
+
+```bash
+NEXT_PUBLIC_BASE_PATH=/invest-portfolio-assistant npm run build
+npx serve out
+```
+
+`npm run dev` serves the app at the site root, without that prefix, at [http://127.0.0.1:43123](http://127.0.0.1:43123).
+
+No API key is required. If the market-data workflow should score headlines with a model, add a repository secret named `OPENAI_API_KEY`. Without it, the built-in word list is used.
+
+## Other ways to run it
+
+Docker still builds the static app and is not required for GitHub Pages:
 
 ```bash
 docker build -t sathorn .
-docker run --rm -p 43123:43123 -v sathorn-data:/app/data sathorn
 ```
 
-Mount `/app/data` so the database survives restarts.
-
-### A small VM
-
-Install Node 22, clone the repo, `npm ci`, `npm run build`, and run `npm start` under systemd. Put a reverse proxy in front if you want HTTPS. Set `NODE_ENV=production`. The session cookie is marked `Secure` in production, so sign-in requires HTTPS once you leave localhost.
-
-Do not commit `.env.local`. The demo password is public and fine for a local worksheet; change it, or delete the demo user, before you put the app on a network other people can reach.
+Do not commit `.env.local`.

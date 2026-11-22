@@ -7,14 +7,14 @@
     "alerts": "Alerts",
     "method": "Method",
     "disclaimer": "Disclaimer",
-    "signIn": "Sign in",
+    "signIn": "This browser",
     "signOut": "Sign out",
     "demo": "Open the demo desk",
     "account": "Create an account"
   },
   "landing": {
     "title": "What to hold. While you hold it. When to rebalance.",
-    "lede": "A worksheet for someone investing from Bangkok. Three numbers produce a mix you can actually buy — SET funds, Thai bank funds, and US ETFs — and the desk keeps score until the mix drifts.",
+    "lede": "A worksheet for someone investing from Bangkok. Three numbers produce a mix you can actually buy — SET funds, Thai bank funds, and US ETFs — and the desk keeps score until the mix drifts. The plan stays in this browser. You can download it.",
     "demo": "Open the demo desk",
     "build": "Build your own",
     "sampleTitle": "A 12-year balanced book",
@@ -130,11 +130,17 @@
     "alerts": "Open alerts",
     "seeAll": "All alerts",
     "emptyTitle": "No book saved yet",
-    "emptyBody": "Build a mix from your timeline, amount, and risk. The desk fills in once you save it.",
+    "emptyBody": "Build a mix from your timeline, amount, and risk. It is saved in this browser, and you can download the file.",
     "emptyAction": "Build a mix",
     "edit": "Edit the plan",
-    "seedNote": "Prices on this desk started as a saved tape so the charts are populated offline. Refresh replaces listed names with Yahoo Finance.",
-    "proxy": "Proxy chart"
+    "seedNote": "This file is the bundled tape, so the charts work before the daily update. A weekday job replaces listed prices after the US close.",
+    "liveNote": "Prices in this file were fetched {when}. The next weekday update runs after the US close.",
+    "demoTilt": "The demo book is deliberately about 6 points overweight global equities, so a rebalance alert is visible. It is not your account.",
+    "proxy": "Proxy chart",
+    "export": "Download JSON",
+    "import": "Import JSON",
+    "clear": "Clear this browser",
+    "importError": "That file is not a Sathorn desk."
   },
   "holding": {
     "back": "Back to the desk",

@@ -4,7 +4,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
+RUN npm install --no-save serve
 ENV NODE_ENV=production
-ENV PORT=43123
 EXPOSE 43123
-CMD ["npm", "start"]
+CMD ["npx", "serve", "out", "-l", "43123"]

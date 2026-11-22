@@ -1,12 +1,12 @@
+"use client";
+
 import { ASSUMPTIONS, CORRELATION, METHOD_ID } from "@/lib/allocation/assumptions";
 import { ASSET_CLASSES } from "@/lib/allocation/types";
-import { dictionaryFor, translate } from "@/lib/i18n";
+import { useT } from "@/components/i18n-provider";
 import { formatPct } from "@/lib/format";
-import { getLocale } from "@/lib/server/locale";
 
-export default async function MethodPage() {
-  const dict = dictionaryFor(await getLocale());
-  const t = (key: string) => translate(dict, key);
+export default function MethodPage() {
+  const t = useT();
   return (
     <article className="max-w-3xl space-y-6 text-sm leading-relaxed">
       <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{METHOD_ID}</p>
@@ -22,7 +22,7 @@ export default async function MethodPage() {
         The other sleeves are a 65/35 blend. Sixty-five percent keeps the strategic shape. Thirty-five percent is inverse-volatility: a sleeve with half the volatility gets twice the weight inside that slice. The correlation matrix below is fixed, so two people with the same inputs get the same mix. Expected return is the weighted average of the planning returns. Volatility is the standard portfolio formula, the square root of w′Σw.
       </p>
       <p>
-        A preference for Thailand or for global markets moves six percentage points between Thai and global equities. No leverage is used. If the slider's target return sits above what this long-only mix can pencil out, the desk says so instead of concentrating further in silence.
+        A preference for Thailand or for global markets moves six percentage points between Thai and global equities. No leverage is used. If the slider target return sits above what this long-only mix can pencil out, the desk says so instead of concentrating further in silence.
       </p>
       <p>
         The fan chart draws correlated monthly returns from those assumptions, resets the mix every month, and adds any contribution at month end. The drawdown shown is the median peak-to-trough across the paths, plus a rougher fifth-percentile path. None of this is a forecast of the SET or the S&P 500.
@@ -82,7 +82,7 @@ export default async function MethodPage() {
       </div>
       <h2 className="font-heading text-2xl">From a sleeve to a ticket</h2>
       <p>
-        Each sleeve is split across instruments a person in Thailand can actually reach: a SET-listed ETF or REIT through a Thai broker, a fund code on a bank platform, or a US-listed ETF through an offshore broker that accepts Thai residents. Interactive Brokers has historically onboarded residents of Thailand; that is access context, not a recommendation, and the firm's rules change. Depositary receipts exist on SET for some foreign names. This desk does not invent a DR ticker.
+        Each sleeve is split across instruments a person in Thailand can actually reach: a SET-listed ETF or REIT through a Thai broker, a fund code on a bank platform, or a US-listed ETF through an offshore broker that accepts Thai residents. Interactive Brokers has historically onboarded residents of Thailand; that is access context, not a recommendation, and the broker rules change. Depositary receipts exist on SET for some foreign names. This desk does not invent a DR ticker.
       </p>
       <p>
         Expense ratios are copied from factsheets and issuer pages dated in 2026 where we checked them, and left blank where we did not want to guess. Fund NAVs that Yahoo does not list use a round reference price so the unit count is arithmetic, and the chart follows the master fund. Read the factsheet before you subscribe.
@@ -92,10 +92,10 @@ export default async function MethodPage() {
       </p>
       <h2 className="font-heading text-2xl">Alerts</h2>
       <p>
-        A five-session move past your band suggests holding, unless the line is a single-name satellite that is also falling with clearly negative headlines. Then the suggestion is to swap it into the sleeve's core fund, which keeps the asset-class weight and drops the single name. Drift past your band suggests a rebalance, with a baht amount and the other side of the trade. A tone shift on its own suggests holding. Tone is a word list, or an optional model if OPENAI_API_KEY is set. It is not a price target.
+        A five-session move past your band suggests holding, unless the line is a single-name satellite that is also falling with clearly negative headlines. Then the suggestion is to swap it into the core fund for that sleeve, which keeps the asset-class weight and drops the single name. Drift past your band suggests a rebalance, with a baht amount and the other side of the trade. A tone shift on its own suggests holding. Tone is a word list, or an optional model if OPENAI_API_KEY is set. It is not a price target.
       </p>
       <p>
-        In-app delivery is real. Email and LINE are adapter stubs that record "skipped" until a transport is wired. The message shape is the same for all three.
+        In-app delivery is real. Email and LINE are adapter stubs that record skipped until a transport is wired. The message shape is the same for all three.
       </p>
     </article>
   );

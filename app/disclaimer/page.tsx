@@ -1,9 +1,9 @@
-import { dictionaryFor, translate } from "@/lib/i18n";
-import { getLocale } from "@/lib/server/locale";
+"use client";
 
-export default async function DisclaimerPage() {
-  const dict = dictionaryFor(await getLocale());
-  const t = (key: string) => translate(dict, key);
+import { useT } from "@/components/i18n-provider";
+
+export default function DisclaimerPage() {
+  const t = useT();
   return (
     <article className="max-w-3xl space-y-4 text-sm leading-relaxed">
       <h1 className="font-heading text-4xl tracking-tight">{t("nav.disclaimer")}</h1>
